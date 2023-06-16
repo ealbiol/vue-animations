@@ -15,6 +15,8 @@
       @after-enter="afterEnter"
       @leave="leave"
       @after-leave="afterLeave"
+      @enter-cancelled="enterCancelled"
+      @leave-cancelled="leaveCancelled"
     >
       <p v-if="paraIsVisible">This is sometimes visible....</p>
     </transition>
@@ -39,6 +41,7 @@
 </template>
 
 <script>
+
 export default {
   data() {
     return {
@@ -46,31 +49,65 @@ export default {
       dialogIsVisible: false,
       paraIsVisible: false,
       usersAreVisible: false,
+      enterInterval: null,
+      leaveInterval: null,
     };
   },
   methods: {
     beforeEnter(el) {
       console.log('beforeEnter');
       console.log(el);
+      //Setting the style of the element from which beforeEnter is in. In this case a <p></p>
+      el.style.opacity = 0;
     },
     beforeLeave(el) {
       console.log('beforeLeave');
       console.log(el);
+      el.style.opacity = 1;
     },
-    enter() {
+    enter(el, done) {
       console.log('enter');
+      let round = 1;
+      //JS function that allows us to execute code every few miliseconds. The second argument is the amount of miliseconds we want to wait. The first argument is a function that is executed every 20 miliseconds in this case.
+      this.enterInterval = setInterval(() => {
+        el.style.opacity = round * 0.01;
+        round++;
+        if (round > 100) {
+          clearInterval(this.enterInterval);
+          //done argument is the second argument of enter to let know that we finished with the animation.
+          done();
+        }
+      }, 20);
     },
     afterEnter(el) {
       console.log('afterEnter');
       console.log(el);
     },
-    leave(el){
+    leave(el, done) {
       console.log('leave');
       console.log(el);
+      let round = 1;
+      //JS function that allows us to execute code every few miliseconds. The second argument is the amount of miliseconds we want to wait. The first argument is a function that is executed every 20 miliseconds in this case.
+      this.leaveInterval = setInterval(() => {
+        el.style.opacity = 1 - round * 0.01;
+        round++;
+        if (round > 100) {
+          clearInterval(this.leaveInterval);
+          //done argument is the second argument of enter to let know that we finished with the animation.
+          done();
+        }
+      }, 20);
     },
-    afterLeave(el){
+    afterLeave(el) {
       console.log('afterLeave');
       console.log(el);
+    },
+    enterCancelled() {
+      clearInterval(this.enterInterval)
+    },
+    leaveCancelled() {
+      clearInterval(this.leaveInterval)
+
     },
     showUsers() {
       this.usersAreVisible = true;
@@ -160,35 +197,6 @@ button:active {
 /*Default vue <transform></transform> component classes: */
 /*These CSS classes will be added at different times when the element is first added to the DOM. In this example when the <p> appears for the first time.</p>*/
 /*CLASSES FOR ENTRYING AN ANIMATION*/
-.para-enter-from {
-  /*The starting state*/
-  /*opacity: 0;
-  transform: translateY(-30px);*/
-}
-.para-enter-active {
-  /*The place where you for example add the transition to tell vue to watch for all CSS properties that might be animated. In this case opacity and transform.*/
-  /*transition: all 0.3s ease-out;*/
-  animation: slide-scale 2s ease-out;
-}
-.para-enter-to {
-  /*The final state*/
-  /*opacity: 1;
-  transform: translateY(0);*/
-}
-
-/*CLASSES FOR LEAVING AN ANIMATION*/
-.para-leave-from {
-  /*opacity: 1;
-  transform: translateY(0);*/
-}
-.para-leave-active {
-  /*transition: all 0.3s ease-in;*/
-  animation: slide-scale 0.3 ease-out;
-}
-.para-levate-to {
-  /*opacity: 0;
-  transform: translateY(30px);*/
-}
 
 .fade-button-enter-from,
 .fade-button-leave-to {
