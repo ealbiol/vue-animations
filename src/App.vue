@@ -6,12 +6,30 @@
   </div>
   <div class="container">
     <!--<transition> Component: Vue Built-in Component to control appearance of the appear and removal of an animation.-->
-    <transition name="para">
+    <transition
+      name="para"
+      mode="out-in"
+      @before-enter="beforeEnter"
+      @before-leave="beforeLeave"
+      @enter="enter"
+      @after-enter="afterEnter"
+      @leave="leave"
+      @after-leave="afterLeave"
+    >
       <p v-if="paraIsVisible">This is sometimes visible....</p>
     </transition>
     <button @click="toggleParagraph">Toggle Paragraph</button>
   </div>
-  <base-modal @close="hideDialog" v-if="dialogIsVisible">
+  <div class="container">
+    <!--//Exception in which <transtion></transtion> accepts more than one child. It happens because in reality only one is added to the DOM because of v-if.-->
+    <transition name="fade-button">
+      <button @click="showUsers" v-if="!usersAreVisible">Show Users</button>
+      <button @click="hideUsers" v-else-if="usersAreVisible">Hide Users</button>
+    </transition>
+    <p v-if="usersAreVisible">Users...</p>
+  </div>
+  <!--Sending via props dialogIsVisible to BaseModal.vue-->
+  <base-modal @close="hideDialog" :dialogIsVisible="dialogIsVisible">
     <p>This is a test dialog!</p>
     <button @click="hideDialog">Close it!</button>
   </base-modal>
@@ -27,9 +45,39 @@ export default {
       animatedBlock: false,
       dialogIsVisible: false,
       paraIsVisible: false,
+      usersAreVisible: false,
     };
   },
   methods: {
+    beforeEnter(el) {
+      console.log('beforeEnter');
+      console.log(el);
+    },
+    beforeLeave(el) {
+      console.log('beforeLeave');
+      console.log(el);
+    },
+    enter() {
+      console.log('enter');
+    },
+    afterEnter(el) {
+      console.log('afterEnter');
+      console.log(el);
+    },
+    leave(el){
+      console.log('leave');
+      console.log(el);
+    },
+    afterLeave(el){
+      console.log('afterLeave');
+      console.log(el);
+    },
+    showUsers() {
+      this.usersAreVisible = true;
+    },
+    hideUsers() {
+      this.usersAreVisible = false;
+    },
     toggleParagraph() {
       this.paraIsVisible = !this.paraIsVisible;
     },
@@ -120,7 +168,7 @@ button:active {
 .para-enter-active {
   /*The place where you for example add the transition to tell vue to watch for all CSS properties that might be animated. In this case opacity and transform.*/
   /*transition: all 0.3s ease-out;*/
-  animation: slide-scale 0.3s ease-out;
+  animation: slide-scale 2s ease-out;
 }
 .para-enter-to {
   /*The final state*/
@@ -129,17 +177,32 @@ button:active {
 }
 
 /*CLASSES FOR LEAVING AN ANIMATION*/
-.para-leave-from{
+.para-leave-from {
   /*opacity: 1;
   transform: translateY(0);*/
 }
-.para-leave-active{
+.para-leave-active {
   /*transition: all 0.3s ease-in;*/
-  animation: slide-scale 0.3 ease-out
+  animation: slide-scale 0.3 ease-out;
 }
-.para-levate-to{
+.para-levate-to {
   /*opacity: 0;
   transform: translateY(30px);*/
 }
 
+.fade-button-enter-from,
+.fade-button-leave-to {
+  opacity: 0;
+}
+.fade-button-enter-active {
+  transition: opacity 0.3s ease-out;
+}
+
+.fade-button-leave-active {
+  transition: opacity 0.3s ease-in;
+}
+.fade-button-enter-to,
+.fade-button-leave-from {
+  opacity: 1;
+}
 </style>
